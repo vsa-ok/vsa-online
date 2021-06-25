@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "sourceMaps": true,
+        "type": "pwa-chrome",
+        "request": "launch",
+        "name": "Launch Edge against localhost",
+        "url": "http://localhost:10001",
+        "webRoot": "${workspaceFolder}"
+      }
+    ]
+  }
