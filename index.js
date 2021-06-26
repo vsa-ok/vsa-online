@@ -257,6 +257,7 @@ class Caja extends React.Component{
 
     }
     
+    
     getProductsDetails(skus){
         async function fetcher(skus){
             this.setState({status:"DESCARGANDO DATOS..."})
