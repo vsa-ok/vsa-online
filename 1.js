@@ -1,26 +1,10 @@
-var jsonResponse
-function getProductData(callBack){
-    function waiting(){
-        
-    }
-    async function fetcher(){
-        return fetch('https://vsa.pythonanywhere.com/api',{
-            method:'post',
-            body:JSON.stringify({"token":"bla","key":"bla2","funcion":"getProductInfo","data":""})
-        })
-        .then(response=>{return response.json()})
-        .then(data=>{
-            var response=data
-            jsonResponse=response
-            callBack(data)
-        })
-        }
-    jsonResponse=""
 
-    fetcher=fetcher.bind(jsonResponse)
-    fetcher()
-    
-    
+async function getProductData(){
+        let response = await fetch('http://vsa.pythonanywhere.com/at',{
+            method:'get'
+        })
+        let texto = await response.json()
+        return texto
 
 }
 
@@ -30,4 +14,7 @@ function callbackGetProductData(datos)
     console.log(datos)
 }
 
-getProductData(callbackGetProductData)
+var a = getProductData()
+a.then((s)=>{console.log(s)})
+console.log(a)
+console.log("aca    ")

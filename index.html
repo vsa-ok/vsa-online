@@ -4,21 +4,33 @@
     <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script><!--core react library-->
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script><!--help us inject react into the dom-->
     <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    <script src="node_modules/js-cookie/src/js.cookie.js"></script>
     <head> 
 
         
-        <script src="index.js" type = "text/babel"></script>
+        <script src="caja.js" type = "text/babel"></script>
+        <script src="stock.js" type = "text/babel"></script>
+        <script src="ingresos.js" type = "text/babel"></script>
+        <script src="app.js" type = "text/babel"></script>
+        <script src="login.js" type = "text/babel"></script>
+        <script src="enviosML.js" type = "text/babel"></script>
+
         <title>VSA Market POS</title>
     </head>
     <body  style="font-family: monospace;">
-        <div id="container">
-          
-        </div>    
+        <div>
+            <img src="logo.png">
+            <div id="container">       
+            </div>   
+        </div>
     </body>
 </html>
 
 
 <style>
+    tr.border_top td {
+  border-top: 1px solid black;
+  }
     tr{
         height: 30px;
     }

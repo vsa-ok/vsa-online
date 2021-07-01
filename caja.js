@@ -96,7 +96,7 @@ class Escaneados extends React.Component{
         console.log(infoProduct)
         infoProduct.updateProduct=this.updateProduct
         var index=this.state.productosEscaneados.findIndex(x=>x.ean==infoProduct.ean)
-        index=-1 //COMO NO SUMO MAS LAS CANTIDADES AL ESCANEAR, POR ESO DEJO INDEX=-1
+        //index=-1 //COMO NO SUMO MAS LAS CANTIDADES AL ESCANEAR, POR ESO DEJO INDEX=-1
         if (index!=-1){
             var cant=parseInt(parseInt(infoProduct.cantidad)||1)
             var parametros={'ean':infoProduct.ean,'quien':'cantidad','valor':cant}
@@ -236,85 +236,52 @@ class Caja extends React.Component{
     }
 
     getProductData(){
-        async function fetcher(){
-            this.setState({status:"DESCARGANDO DATOS..."})
-            this.setState({enableBtnGuardar:false})
-            return fetch('https://vsa.pythonanywhere.com/api',{
-                method:'post',
-                body:JSON.stringify({"token":"bla","key":"bla2","funcion":"getProductInfo","data":{'tipoPedido':this.ref_typesOfSales.current.state.value}})
-            })
-            .then(response=>{return response.json()})
-            .then(data=>{
-                var response=data
+        this.setState({status:"DESCARGANDO DATOS..."})
+        this.setState({enableBtnGuardar:false})
+        this.props.callApi("getProductInfo",{'tipoPedido':this.ref_typesOfSales.current.state.value}).then(response=>{
                 this.allProducts=response
                 this.setState({status:"OK, LISTO PARA EMPEZAR"})
                 this.setState({enableBtnGuardar:true})
-
-            })
-            }
-        fetcher=fetcher.bind(this)
-        fetcher()    
+        })
 
     }
     
     
     getProductsDetails(skus){
-        async function fetcher(skus){
-            this.setState({status:"DESCARGANDO DATOS..."})
-            this.setState({enableBtnGuardar:false})
-            return fetch('https://vsa.pythonanywhere.com/api',{
-                method:'post',
-                body:JSON.stringify({"token":"bla","key":"bla2","funcion":"getProductsDetails","data":{'sku':skus}})
-            })
-            .then(response=>{return response.json()})
-            .then(datos=>{
-                var response=datos
-                let datosDescargados=response.data.map((s)=>({['sku']:s['Referencia interna'],['stock']:"P:"+s['Cantidad prevista']+"/F:"+s['cantidad_fisica']}))
-                this.setState({status:"STOCK DESCARGADO"})
-                let newProductosEscaneados=[]
-                for (const producto of this.ref_escaneados.current.state.productosEscaneados){
-                    let copy={};
-                    Object.assign(copy, producto);
-                    try{
-                        copy['stock']=datosDescargados.find((e)=>{return e.sku==copy.sku}).stock
-                    }
-                    catch(error){
-                        copy['stock']="-"
-                    }
-                    newProductosEscaneados.push(copy)
+        this.setState({status:"DESCARGANDO DATOS..."})
+        this.setState({enableBtnGuardar:false})
+        this.props.callApi("getProductsDetails",{'sku':skus}).then(response=>{
+            let datosDescargados=response.data.map((s)=>({['sku']:s['Referencia interna'],['stock']:"P:"+s['Cantidad prevista']+"/F:"+s['cantidad_fisica']}))
+            this.setState({status:"STOCK DESCARGADO"})
+            let newProductosEscaneados=[]
+            for (const producto of this.ref_escaneados.current.state.productosEscaneados){
+                let copy={};
+                Object.assign(copy, producto);
+                try{
+                    copy['stock']=datosDescargados.find((e)=>{return e.sku==copy.sku}).stock
                 }
-                this.ref_escaneados.current.setState({productosEscaneados:[]},()=>{
-                    this.ref_escaneados.current.setState({productosEscaneados:newProductosEscaneados})})
-                console.log(this.ref_escaneados.current.state.productosEscaneados)
-                this.setState({enableBtnGuardar:true})
+                catch(error){
+                    copy['stock']="-"
+                }
+                newProductosEscaneados.push(copy)
+            }
+            this.ref_escaneados.current.setState({productosEscaneados:[]},()=>{
+                this.ref_escaneados.current.setState({productosEscaneados:newProductosEscaneados})})
+            console.log(this.ref_escaneados.current.state.productosEscaneados)
+            this.setState({enableBtnGuardar:true})
 
-            })
-            }
-        fetcher=fetcher.bind(this)
-        fetcher(skus)    
+        })
     }
+
     login(){
-        async function fetcher(){
-            return fetch('https://vsa.pythonanywhere.com/api',{
-                method:'post',
-                body:JSON.stringify({"token":"bla","key":"bla2","funcion":"login","data":""})
-            })
-            .then(response=>{return response.json()})
-            .then(data=>{
-                this.setState({listTypesOfSales:data.data})
-                this.getProductData.bind(this)()
-            })
-            }
-        fetcher=fetcher.bind(this)
-        fetcher()    
+        this.props.callApi("getTipoPedido","").then(response=>{
+            this.setState({listTypesOfSales:response.data})
+            this.getProductData.bind(this)()
+        })
     }
     saveSalesData(productData){
-        async function fetcher(productData){
-            return fetch('https://vsa.pythonanywhere.com/api',{
-                method:'post',
-                body:productData})
-            .then(response=>{return response.json()})
-            .then(data=>{
+        this.setState({status:"GUARDANDO ORDEN"})
+        this.props.callApi("saveProductInfo",productData).then(data=>{
                 if (data.data.status=="ok"){
                     this.setState({status:"ORDEN GENERADA. COMPROBANTE N°: "+String(data.data.idComprobante).padStart(5,"0")})
                     
@@ -327,10 +294,7 @@ class Caja extends React.Component{
                 }
 
             })
-            }
-        fetcher=fetcher.bind(this)
-        fetcher(JSON.stringify({"token":"bla","key":"bla2","funcion":"saveProductInfo","data":productData}))    
-    }
+            }  
     callbackTotalProductos(totalProductos){
         this.setState({'totalProductos':totalProductos})
         this.setState({enableBtnGuardar:!!totalProductos})
@@ -393,62 +357,4 @@ class Caja extends React.Component{
     
 
 }
-class ConsultaStock extends React.Component{
-    render(){
-        return(<div>
-            <label>Escanear producto:</label>
-            <Textbox>{(s)=>{console.log(s)}}</Textbox>
 
-            </div>)
-
-    }
-}
-class Ingresos extends React.Component{
-    render(){
-        return <label>Ingresos</label>
-    }
-}
-class App extends React.Component{
-    constructor(props){
-        super(props)
-        this.state={menu:['CAJA','VER STOCK','INGRESOS']}
-        this.state['visibilty']=this.setVisibilty(0)
-        
-    }
-    setVisibilty(index){
-        let tempVisibilty=this.state.menu.map((value,indexMap)=>{
-            if (index==indexMap){
-                return "tabVisible"
-            }
-            else{
-                return "tabHidden"
-            }
-
-        })
-        console.log(index)
-        return tempVisibilty
-    }
-    render(){
-        return <div>
-            <div>
-                {
-                    this.state.menu.map((nombre,index)=>{
-                        return <button id={index} key={index} onClick={(e)=>{this.setState({visibilty:this.setVisibilty(e.target.id)})}}>{nombre}</button>
-                                    })
-                }
-            </div>
-            <hr></hr>
-            <div>
-                <div index={0} className={this.state.visibilty[0]}><Caja></Caja></div>
-                <div index={1} className={this.state.visibilty[1]}><ConsultaStock></ConsultaStock></div>
-                <div index={2} className={this.state.visibilty[2]}><Ingresos></Ingresos></div>
-            </div>
-        </div>
-            }
-        }
-        
-//fetch('http://google.com.ar')
-//    .then(response => response.json())
-//    .then(json => console.log(json));
-
-var b=ReactDOM.render(<App></App>, document.getElementById('container'));
